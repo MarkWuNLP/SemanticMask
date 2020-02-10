@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 source /home/espnet/tools/venv/bin/activate
 dataset=test_other
-decodedir=/teamscratch/tts_intern_experiment/yuwu1/librispeech_0.5/results/spec_aug_ddp_cnn_mask15_speed_${dataset}_beam50
+decodedir=/teamscratch/tts_intern_experiment/yuwu1/librispeech_0.5/results/spec_aug_ddp_cnn_mask15_speed_${dataset}_beam20
 beam=20
 nbest=20
 ngpu=4
