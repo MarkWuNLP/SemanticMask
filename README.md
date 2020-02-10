@@ -9,5 +9,13 @@ We already build a runnable docker, you can run the following commond to downloa
 Regarding to data preparation, I suggest you read [ESPnet instructions](https://github.com/espnet/espnet/tree/master/egs/librispeech). It should be note that espnet doesn't do speed perturbation, but I strongly recommend to do it according to the better performance on dev-other and test-other datasets. 
 
 ## Training and decoding 
+
+In terms of decoding, pleaes first download the ESPnet [pre-trained RNN language model](https://github.com/espnet/espnet/tree/master/egs/librispeech), and then run our decoding script to get the model output. 
 ## Pre-train Models
-We release a [base model](https://drive.google.com/open?id=1tQVX24aN5NpOtDFWO6ZsVWOLHuOjEj8W) (12 encoder layers and 6 decoder layers) and a [large model](https://drive.google.com/open?id=1zDS_cUhyo17foGMsbUBERuI8u1jC13vB) (24 encoder layers and 12 decoder layers).
+We release a [base model](https://drive.google.com/open?id=1tQVX24aN5NpOtDFWO6ZsVWOLHuOjEj8W) (12 encoder layers and 6 decoder layers) and a [large model](https://drive.google.com/open?id=1zDS_cUhyo17foGMsbUBERuI8u1jC13vB) (24 encoder layers and 12 decoder layers). It achevies following results with shallow language model fusion setting.
+
+
+|      |dev-clean|dev-other|test-clean|test-other| 
+| ------------- |:-------------:|:-------------:|:-------------:|:-------------:|
+| Base  | 2.07 | 5.06| 2.31|5.21 |
+| Large     | 2.02|4.91| 2.19  |5.19 |
