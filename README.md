@@ -8,7 +8,12 @@ We already build a runnable docker, you can run the following commond to downloa
 
 Regarding to data preparation, I suggest you read [ESPnet instructions](https://github.com/espnet/espnet/tree/master/egs/librispeech). It should be note that espnet doesn't do speed perturbation, but I strongly recommend to do it according to the better performance on dev-other and test-other datasets. 
 
-## Training and decoding 
+### Word Alignment
+To enable semantic mask training, you have to align audio and word with a word alignment tool. 
+(Todo Chengyi add details for word alignment)
+
+## Training and decoding
+For training, I upload my training configs into configs folder, including base setting and large setting respectively. 
 
 In terms of decoding, pleaes first download the ESPnet [pre-trained RNN language model](https://github.com/espnet/espnet/tree/master/egs/librispeech), and then run our decoding script to get the model output. 
 ## Pre-train Models
