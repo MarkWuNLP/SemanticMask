@@ -289,6 +289,7 @@ def dist_train(gpu, args):
     utts = list(valid_json.keys())
     idim = int(valid_json[utts[0]]['input'][0]['shape'][-1])
     odim = int(valid_json[utts[0]]['output'][0]['shape'][-1])
+
     print('#input dims : ' + str(idim))
     print('#output dims: ' + str(odim))
     print('initialize model on gpu: {}'.format(args.gpu))
@@ -316,6 +317,7 @@ def dist_train(gpu, args):
         optimizer = get_std_opt(model, args.adim, args.transformer_warmup_steps, args.transformer_lr)
     else:
         raise NotImplementedError("unknown optimizer: " + args.opt)
+    logging.warning("Init")
     train = make_batchset(train_json, args.batch_size,
                           args.maxlen_in, args.maxlen_out, args.minibatches,
                           min_batch_size=args.ngpu if args.ngpu > 1 else 1,
@@ -341,21 +343,7 @@ def dist_train(gpu, args):
         mode='asr', load_output=True, preprocess_conf=args.preprocess_conf,
         preprocess_args={'train': False}  # Switch the mode of preprocessing
     )
-    """
-    num_samples = int(math.ceil(len(valid) * 1.0 / args.ngpu))
-    total_len = num_samples * args.ngpu
-    g = torch.Generator()
-    g.manual_seed(args.seed)
-    indices = torch.randperm(len(valid), generator=g).tolist()
-    indices += indices[:(total_len - len(indices))]
-    assert len(indices) == total_len
-    indices = indices[args.rank:total_len:args.ngpu]
-    assert len(indices) == num_samples
-    train_dataset = []
-    for i in indices:
-        train_dataset.append(load_tr(train[i]))
-    print(train_dataset[0])
-    """
+    logging.warning("start loading data. ")
     train_dataset = TransformDataset(train, lambda data: converter(load_tr(data)))
     valid_dataset = TransformDataset(valid, lambda data: validconverter(load_cv(data)))
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
@@ -383,7 +371,7 @@ def dist_train(gpu, args):
         print("=> loaded checkpoint '{}' (epoch {})".format(args.resume, checkpoint['epoch']))
     else:
         start_epoch = 0
-
+    logging.warning("start training ")
     for epoch in range(start_epoch, args.epochs):
         train_sampler.set_epoch(epoch)
         train_epoch(train_loader, model, optimizer, epoch, args)

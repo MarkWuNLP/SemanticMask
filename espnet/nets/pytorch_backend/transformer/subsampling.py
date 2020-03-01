@@ -55,58 +55,6 @@ def make_pad_mask(lens):
         """
     return torch.arange(lens.max(), device=lens.device).repeat(lens.size(0), 1) < lens.unsqueeze(-1)
 
-
-class DecoderConv1dPosition(torch.nn.Module):
-    def __init__(self, odim, dim):
-        super(DecoderConv1dPosition, self).__init__()
-
-        self.embed = torch.nn.Embedding(odim, 512)
-        self.position = PositionalEncoding(odim, 1)
-        self.conv1 = torch.nn.Conv1d(512, 512, 3, stride=1)
-        self.norm1 = torch.nn.LayerNorm(512)
-        self.conv2 = torch.nn.Conv1d(512, 512, 3, stride=1)
-        self.norm2 = torch.nn.LayerNorm(512)
-        self.conv3 = torch.nn.Conv1d(512, 512, 3, stride=1)
-        self.norm3 = torch.nn.LayerNorm(512)
-
-        self.out = torch.nn.Linear(512, dim)
-
-    def forward(self, ys_pad, mask):
-        '''
-        :param torch.Tensor ys_pad: batch of padded input sequence ids (B, Tmax)
-        :param torch.Tensor mask: batch of input length mask (B, Tmax)
-        :return: batch of padded hidden state sequences (B, Tmax, 512)
-        :rtype: torch.Tensor
-        '''
-
-        ys_pad = self.embed(ys_pad)
-        ys_pad = self.position(ys_pad)
-        mask = ~mask.unsqueeze(-1)
-
-        ys_pad = F.pad(ys_pad, (0, 0, 2, 0))
-        ys_pad = self.conv1(ys_pad.transpose(1, 2)).transpose(1, 2)
-        ys_pad = self.norm1(ys_pad)
-        ys_pad = F.relu(ys_pad)
-        ys_pad = ys_pad.masked_fill(mask, 0.0)
-
-        ys_pad = F.pad(ys_pad, (0, 0, 2, 0))
-        ys_pad = self.conv2(ys_pad.transpose(1, 2)).transpose(1, 2)
-        ys_pad = self.norm2(ys_pad)
-        ys_pad = F.relu(ys_pad)
-        ys_pad = ys_pad.masked_fill(mask, 0.0)
-
-        ys_pad = F.pad(ys_pad, (0, 0, 2, 0))
-        ys_pad = self.conv3(ys_pad.transpose(1, 2)).transpose(1, 2)
-        ys_pad = self.norm3(ys_pad)
-        ys_pad = F.relu(ys_pad)
-        ys_pad = ys_pad.masked_fill(mask, 0.0)
-
-        ys_pad = self.out(ys_pad)
-        ys_pad = ys_pad.masked_fill(mask, 0.0)
-
-        return ys_pad
-
-
 class DecoderConv1d(torch.nn.Module):
     def __init__(self, odim, dim):
         super(DecoderConv1d, self).__init__()
