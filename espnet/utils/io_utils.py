@@ -46,8 +46,10 @@ class LoadInputsAndTargets(object):
                  use_second_target=False,
                  preprocess_args=None,
                  keep_all_data_on_mem=False,
+                 word_mask_ratio = 0.0
                  ):
         self._loaders = {}
+        self.word_mask_ratio = word_mask_ratio
         if mode not in ['asr', 'tts', 'mt']:
             raise ValueError(
                 'Only asr or tts are allowed: mode={}'.format(mode))
@@ -82,6 +84,20 @@ class LoadInputsAndTargets(object):
             self.preprocess_args = dict(preprocess_args)
 
         self.keep_all_data_on_mem = keep_all_data_on_mem
+
+    def mask_feats(self, feat, params):
+        start, end = params
+        start = np.unique(start)
+        end = np.unique(end)
+        seq_len = len(start)
+        mask = np.random.binomial(1, self.word_mask_ratio, size=seq_len)
+        mask_id = np.argwhere(mask == 1)
+        fill_num = feat.mean()
+        for i in range(len(mask_id)):
+            id = mask_id[i]
+            feat[start[id][0]:end[id][0]] = fill_num
+
+        return feat
 
     def __call__(self, batch):
         """Function to load inputs and targets from list of dicts
@@ -156,6 +172,12 @@ class LoadInputsAndTargets(object):
                         y_feats_dict.setdefault('end', []).append(end)
                     y_feats_dict.setdefault(inp['name'], []).append(x)
         if self.mode == 'asr':
+            # semantic mask
+            if self.word_mask_ratio != 0:
+                for idx_x, x in enumerate(x_feats_dict['input1']):
+                    start = y_feats_dict['start'][idx_x]
+                    end= y_feats_dict['end'][idx_x]
+                    x_feats_dict['input1'][idx_x] = self.mask_feats(x,(start,end))
             return_batch, uttid_list = self._create_batch_asr(
                 x_feats_dict, y_feats_dict, uttid_list)
         elif self.mode == 'tts':
@@ -169,6 +191,8 @@ class LoadInputsAndTargets(object):
         else:
             raise NotImplementedError
 
+
+        #spec augment
         if self.preprocessing is not None:
             # Apply pre-processing all input features
             for x_name in return_batch.keys():
