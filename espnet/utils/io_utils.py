@@ -50,6 +50,7 @@ class LoadInputsAndTargets(object):
                  ):
         self._loaders = {}
         self.word_mask_ratio = word_mask_ratio
+        logging.warning("mask {0} ratio of words".format(str(word_mask_ratio)))
         if mode not in ['asr', 'tts', 'mt']:
             raise ValueError(
                 'Only asr or tts are allowed: mode={}'.format(mode))

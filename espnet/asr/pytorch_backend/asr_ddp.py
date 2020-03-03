@@ -104,91 +104,55 @@ class ProgressMeter(object):
         fmt = '{:' + str(num_digits) + 'd}'
         return '[' + fmt + '/' + fmt.format(num_batches)+']'
 
-#
-# class MaskConverter(object):
-#     """Custom batch converter for Pytorch.
-#
-#     Args:
-#         subsampling_factor (int): The subsampling factor.
-#         dtype (torch.dtype): Data type to convert.
-#
-#     """
-#
-#     def __init__(self,device, subsampling_factor=1, dtype=torch.float32, mask_ratio=0.15):
-#         """Construct a MaskConverter object."""
-#         self.subsampling_factor = subsampling_factor
-#         self.ignore_id = -1
-#         self.dtype = dtype
-#         self.device = device
-#         self.mask_ratio = mask_ratio
-#
-#     def del_feats(self, feat, params):
-#         start, end, label = params
-#         seq_len = label.shape[0]
-#         delpos = np.random.binomial(1, self.mask_ratio, size=seq_len)
-#         mask_id = np.argwhere(delpos == 1)
-#         delpos2 = []
-#         for i in range(len(mask_id)):
-#             id = mask_id[i]
-#             for j in range(start[id][0],end[id][0]):
-#                 delpos2.append(j)
-#
-#         feat = np.delete(feat,delpos2,axis=0)
-#         return feat
-#
-#     def mask_feats(self, feat, params):
-#         start, end, label = params
-#         start = np.unique(start)
-#         end = np.unique(end)
-#         seq_len = len(start)
-#         mask = np.random.binomial(1, self.mask_ratio, size=seq_len)
-#         mask_id = np.argwhere(mask == 1)
-#         fill_num = feat.mean()
-#         #fill_num = np.random.normal(feat.mean(), feat.std(), size=feat.shape)
-#         for i in range(len(mask_id)):
-#             id = mask_id[i]
-#             #feat[start[id[0]]:end[id[0]]] = fill_num[start[id[0]]:end[id[0]]]
-#             feat[start[id][0]:end[id][0]] = fill_num
-#         # label_mask.append(-1)
-#         return feat
-#
-#     def __call__(self, batch):
-#         """Transform a batch and send it to a device.
-#
-#         Args:
-#             batch (list): The batch to transform.
-#
-#         Returns:
-#             tuple(torch.Tensor, torch.Tensor, torch.Tensor)
-#
-#         """
-#         # batch should be located in list
-#
-#         xs, ys = batch
-#         ys = list(ys)
-#         masked_xs = []
-#         if len(xs) != len(ys):
-#             print(xs[0])
-#             pass
-#         # assert len(xs[0]) == len(ys[0])
-#         for i in range(len(xs)):
-#             x = self.mask_feats(xs[i], ys[i])
-#             #x = self.del_feats(x, ys[i])
-#             masked_xs.append(x)
-#         xs = masked_xs
-#
-#         # perform subsampling
-#         if self.subsampling_factor > 1:
-#             xs = [x[::self.subsampling_factor, :] for x in xs]
-#
-#         # get batch of lengths of input sequences
-#         ilens = np.array([x.shape[0] for x in xs])
-#         ilens = torch.from_numpy(ilens).to(self.device)
-#         xs_pad = pad_list([torch.from_numpy(x).float() for x in xs], 0).to(self.device, dtype=self.dtype)
-#
-#         ys_pad = pad_list([torch.from_numpy(y[2]) for y in ys], self.ignore_id).long().to(self.device)
-#
-#         return xs_pad, ilens, ys_pad
+
+class TrainingConverter(object):
+    """Custom batch converter for Pytorch.
+
+    Args:
+        subsampling_factor (int): The subsampling factor.
+        dtype (torch.dtype): Data type to convert.
+
+    """
+
+    def __init__(self,device, subsampling_factor=1, dtype=torch.float32):
+        """Construct a MaskConverter object."""
+        self.subsampling_factor = subsampling_factor
+        self.ignore_id = -1
+        self.dtype = dtype
+        self.device = device
+
+
+    def __call__(self, batch):
+        """Transform a batch and send it to a device.
+
+        Args:
+            batch (list): The batch to transform.
+
+        Returns:
+            tuple(torch.Tensor, torch.Tensor, torch.Tensor)
+
+        """
+        # batch should be located in list
+
+        xs, ys = batch
+        ys = list(ys)
+        if len(xs) != len(ys):
+            print("error uttr")
+            print(xs[0])
+            pass
+
+        # perform subsampling
+        if self.subsampling_factor > 1:
+            xs = [x[::self.subsampling_factor, :] for x in xs]
+
+        # get batch of lengths of input sequences
+        ilens = np.array([x.shape[0] for x in xs])
+        ilens = torch.from_numpy(ilens).to(self.device)
+        xs_pad = pad_list([torch.from_numpy(x).float() for x in xs], 0).to(self.device, dtype=self.dtype)
+
+        ys_pad = pad_list([torch.from_numpy(y[2]) for y in ys], self.ignore_id).long().to(self.device)
+
+        return xs_pad, ilens, ys_pad
 
 class CustomConverter(object):
     """Custom batch converter for Pytorch.
@@ -278,7 +242,8 @@ def dist_train(gpu, args):
         init_method=init_method)
     torch.cuda.set_device(args.gpu)
 
-    converter = CustomConverter(args.gpu)
+    converter = TrainingConverter(args.gpu)
+
     validconverter = CustomConverter(args.gpu)
     with open(args.train_json, 'rb') as f:
         train_json = json.load(f)['utts']
