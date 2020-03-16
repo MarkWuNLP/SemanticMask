@@ -9,6 +9,7 @@ python espnet/bin/asr_train.py \
         --ngpu 4 \
 	--dist true \
 	--maskwords true \
+	--maskratio 0.15 \
         --backend pytorch \
         --dict /teamscratch/tts_intern_experiment/yuwu1/ASR/script/train_960_unigram5000_units.txt \
         --train-json /teamscratch/tts_intern_experiment/yuwu1/librispeech/train_960/data_aligned_clean_sp_new.json \
