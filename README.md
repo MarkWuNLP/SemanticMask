@@ -13,7 +13,7 @@ To enable semantic mask training, you have to align audio and word with a word a
 (Todo Chengyi add details for word alignment)
 
 ## Training and decoding
-For training, I upload my training configs into configs folder, including base setting and large setting respectively. 
+For training, I upload my training configs into configs folder, including base setting and large setting respectively. Our archtecture is similar to ESPnet, but replacing position embedding with CNN in both encoder and decoder. The specific code change can be found at [here](https://github.com/MarkWuNLP/SemanticMask/blob/master/espnet/nets/pytorch_backend/transformer/subsampling.py)
 
 In terms of decoding, pleaes first download the ESPnet [pre-trained RNN language model](https://github.com/espnet/espnet/tree/master/egs/librispeech), and then run our decoding script to get the model output. 
 ## Pre-train Models
