@@ -10,8 +10,7 @@ Regarding data preparation, I suggest you read [ESPnet instructions](https://git
 
 ### Word Alignment
 To enable semantic mask training, you have to align audio and word.
-In our work, we use the alignment results released by [this repo](https://github.com/CorentinJ/librispeech-alignments), which is obtained using [Montreal Forced Aligner](https://montreal-forced-aligner.readthedocs.io/en/latest/).
-The alignment infomation for training set is uploaded in 
+In our work, we use the alignment results released by [this repo](https://github.com/CorentinJ/librispeech-alignments), which is obtained using [Montreal Forced Aligner](https://montreal-forced-aligner.readthedocs.io/en/latest/). We put the extracted information on `data` directory. start.txt and end.txt record the alignment position in frame for each word in each utterance.
 
 ## Training and decoding
 For training, I upload my training configs into configs folder, including base setting and large setting respectively. Our archtecture is similar to ESPnet, but replacing position embedding with CNN in both encoder and decoder. The specific code change can be found at [here](https://github.com/MarkWuNLP/SemanticMask/blob/master/espnet/nets/pytorch_backend/transformer/subsampling.py)
